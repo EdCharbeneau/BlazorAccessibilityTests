@@ -1,0 +1,70 @@
+﻿https://www.w3.org/TR/wai-aria-practices-1.1/examples/accordion/accordion.html
+  <!-- Accordion Configuration Options
+  
+  data-allow-toggle
+    Allow for each toggle to both open and close its section. Makes it possible for all sections to be closed. Assumes only one section may be open.
+  
+  data-allow-multiple
+    Allow for multiple accordion sections to be expanded at the same time. Assumes data-allow-toggle otherwise the toggle on open sections would be disabled.
+  __________
+  
+  Ex:
+    <div id="accordionGroup" class="Accordion" data-allow-multiple>
+  
+    <div id="accordionGroup" class="Accordion" data-allow-toggle>
+  -->
+<div id="@Id" class="Accordion">
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>
+@code {
+    [Parameter]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    private List<IPanel> Panels = new();
+
+    public void AddPanel(IPanel newPanel)
+    {
+        if(Panels.Count == 0)
+        {
+            newPanel.IsExpanded = true;
+        }
+        Panels.Add(newPanel);
+    }
+
+    public void CollapseAll()
+    {
+        foreach (var panel in Panels)
+        {
+            panel.Collapse();
+        }
+    }
+
+    public void TabNext(IPanel caller)
+    {
+        var index = Panels.IndexOf(caller) + 1;
+        if (index == Panels.Count) index = 0;
+        Panels[index].Focus();
+    }
+
+    public void TabPrevious(IPanel caller)
+    {
+        var index = Panels.IndexOf(caller) - 1;
+        if (index == -1) index = Panels.Count - 1;
+        Panels[index].Focus();
+    }
+
+    public void Home()
+    {
+        Panels.First().Focus();
+    }
+
+    public void End()
+    {
+        Panels.Last().Focus();
+    }
+}

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.31903.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorAccessibilityTests", "BlazorAccessibility\BlazorAccessibilityTests.csproj", "{F6AD2C6D-01EC-47E8-9113-142BF50B96B3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorAccessibilityTests.Tests", "BlazorAccessibilityTests.Tests\BlazorAccessibilityTests.Tests.csproj", "{FD9FA982-2655-4A21-BF1E-72A1CCA8EF38}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F6AD2C6D-01EC-47E8-9113-142BF50B96B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6AD2C6D-01EC-47E8-9113-142BF50B96B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6AD2C6D-01EC-47E8-9113-142BF50B96B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6AD2C6D-01EC-47E8-9113-142BF50B96B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD9FA982-2655-4A21-BF1E-72A1CCA8EF38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD9FA982-2655-4A21-BF1E-72A1CCA8EF38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD9FA982-2655-4A21-BF1E-72A1CCA8EF38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD9FA982-2655-4A21-BF1E-72A1CCA8EF38}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {69487E1D-DAEB-4B15-BDCD-1753651542E6}
+	EndGlobalSection
+EndGlobal

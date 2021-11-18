@@ -1,0 +1,10 @@
+﻿@inherits TestContext
+@code {
+
+    [Fact]
+    public void ShouldRunTests()
+    {
+        var ctx = Render(@<Example/>);
+        ctx.MarkupMatches(@<h3>Example</h3>);
+    }
+}

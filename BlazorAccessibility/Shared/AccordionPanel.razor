@@ -1,0 +1,107 @@
+﻿@implements IPanel
+<h3>
+    <button aria-expanded="@IsExpanded.ToString().ToLower()"
+            aria-disabled="@IsExpanded"
+            class="Accordion-trigger"
+            aria-controls="@ContentId"
+            id="@PanelId"
+            @ref="ButtonElement"
+            @onclick="HandleClick"
+            @onkeydown="HandleKeyDown" @onkeydown:preventDefault="preventKey" @onkeydown:stopPropagation="preventKey">
+        <span class="Accordion-title">
+            @Title
+            <span class="Accordion-icon"></span>
+        </span>
+    </button>
+</h3>
+<div id="@ContentId"
+     role="@role"
+     aria-labelledby="@PanelId"
+     class="Accordion-panel"
+     hidden="@isHidden">
+    <div>
+        @ChildContent
+    </div>
+</div>
+
+
+@code {
+    public bool IsExpanded { get; set; } = false;
+    bool isHidden => !IsExpanded;
+    public string role => IsExpanded ? "region" : null!;
+    bool preventKey;
+
+    [Parameter]
+    public Guid PanelId { get; set; } = Guid.NewGuid();
+
+    [Parameter]
+    public Guid ContentId { get; set; } = Guid.NewGuid();
+
+    [Parameter, EditorRequired]
+    public string? Title { get; set; }
+
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter]
+    public AriaAccordion Parent { get; set; } = null!;
+
+    ElementReference ButtonElement;
+
+    public void Collapse()
+    {
+        IsExpanded = false;
+        StateHasChanged();
+    }
+
+    public void Expand()
+    {
+        IsExpanded = true;
+    }
+
+    void HandleClick()
+    {
+        Parent.CollapseAll();
+        Expand();
+    }
+
+    void HandleKeyDown(KeyboardEventArgs args)
+    {
+        preventKey = true;
+        switch (args.Code)
+        {
+            case "ArrowDown":
+                Parent.TabNext(this);
+                break;
+
+            case "ArrowUp":
+                Parent.TabPrevious(this);
+                break;
+
+            case "Home":
+                Parent.Home();
+                break;
+
+            case "End":
+                Parent.End();
+                break;
+
+            default:
+                preventKey = false;
+                break;
+
+        }
+
+    }
+
+    protected override void OnInitialized()
+    {
+        Parent.AddPanel(this);
+    }
+
+    public async Task Focus()
+    {
+        await ButtonElement.FocusAsync();
+        StateHasChanged();
+    }
+}
