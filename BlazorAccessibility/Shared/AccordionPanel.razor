@@ -15,7 +15,7 @@
     </button>
 </h3>
 <div id="@ContentId"
-     role="@role"
+     role="@Role"
      aria-labelledby="@PanelId"
      class="Accordion-panel"
      hidden="@isHidden">
@@ -26,10 +26,11 @@
 
 
 @code {
+    private bool isHidden => !IsExpanded;
+    private bool preventKey;
+    private string Role => IsExpanded ? "region" : null!;
+
     public bool IsExpanded { get; set; } = false;
-    bool isHidden => !IsExpanded;
-    public string role => IsExpanded ? "region" : null!;
-    bool preventKey;
 
     [Parameter]
     public Guid PanelId { get; set; } = Guid.NewGuid();
@@ -89,9 +90,7 @@
             default:
                 preventKey = false;
                 break;
-
         }
-
     }
 
     protected override void OnInitialized()

@@ -1,335 +1,197 @@
 ﻿@using BlazorAccessibilityTests.Shared
 @inherits TestContext
 @code {
+    private IRenderedFragment RenderAccordionWithTwoPanels() 
+        => Render(@<AriaAccordion>
+                     <AccordionPanel Title="P1">
+                       <p>P1 Content</p>
+                     </AccordionPanel>
+                     <AccordionPanel Title="P2">
+                       <p>P2 Content</p>
+                     </AccordionPanel>
+                   </AriaAccordion>);
+    
+    private IRenderedFragment RenderAccordionWithFourPanels() 
+        => Render(@<AriaAccordion>
+                     <AccordionPanel Title="P1">
+                       <p>P1 Content</p>
+                     </AccordionPanel>
+                     <AccordionPanel Title="P2">
+                       <p>P2 Content</p>
+                     </AccordionPanel>
+                     <AccordionPanel Title="P3">
+                       <p>P3 Content</p>
+                     </AccordionPanel>
+                     <AccordionPanel Title="P4">
+                       <p>P4 Content</p>
+                     </AccordionPanel>
+                   </AriaAccordion>);
 
-    // Element that serves as an accordion header.
-    // Each accordion header element contains a button that controls the visibility of its content panel.
-    // The example uses heading level 3 so it fits correctly within the outline of the page; the example is contained in a section titled with a level 2 heading.
-    [Fact(DisplayName = "Accordion header is rendered.")]
-    public void HeaderElementShouldRender()
+    [Fact]
+    public void FirstRenderMarkupCorrect()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="Hello World">
-                                    <p>Child Content</p>
-                                </AccordionPanel>
-    </AriaAccordion>
-    );
-        cut.FindComponent<AccordionPanel>()
-           .Find("h3").IsFirstOfType();
+        var cut = RenderAccordionWithTwoPanels();
+                
+        cut.MarkupMatches(
+            @<div id:regex="[\d\w-]+" class="Accordion">
+               <h3>
+                 <button aria-expanded="true" aria-disabled="" class="Accordion-trigger" aria-controls:regex="[\d\w-]+" id:regex="[\d\w-]+">
+                   <span class="Accordion-title">P1
+                     <span class="Accordion-icon"></span>
+                   </span>
+                 </button>
+               </h3>
+               <div id:regex="[\d\w-]+" role="region" aria-labelledby:regex="[\d\w-]+" class="Accordion-panel">
+                 <div>
+                   <p>P1 Content</p>
+                 </div>
+               </div>
+               <h3>
+                 <button aria-expanded="false" class="Accordion-trigger" aria-controls:regex="[\d\w-]+" id:regex="[\d\w-]+">
+                   <span class="Accordion-title">P2
+                     <span class="Accordion-icon"></span>
+                   </span>
+                 </button>
+               </h3>
+               <div id:regex="[\d\w-]+" aria-labelledby:regex="[\d\w-]+" class="Accordion-panel" hidden="">
+                 <div>
+                   <p>P2 Content</p>
+                 </div>
+               </div>
+             </div>);
     }
 
-// Space or Enter
-// When focus is on the accordion header of a collapsed section, expands the section.
-// Note: The Space or Enter buttons trigger an "onclick" event 
-
-// aria-expanded="true"	button	
-// Set to true when the Accordion panel is expanded, otherwise set to false.
-
+    // Space or Enter
+    // When focus is on the accordion header of a collapsed section, expands the section.
+    // Note: The Space or Enter buttons trigger an "onclick" event 
+    // aria-expanded="true"	button	
+    // Set to true when the Accordion panel is expanded, otherwise set to false.
     [Fact(DisplayName = "Set to true when the Accordion panel is expanded, otherwise set to false.")]
     public void AriaExpanedAttribute()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-    </AriaAccordion>
-    );
-
-        var panels = cut.FindComponents<AccordionPanel>();
-        var button1 = panels[0].Find("button");
-        var button2 = panels[1].Find("button");
-
-
-        button1.GetAttribute("aria-expanded").Should().Be("true");
-        button2.GetAttribute("aria-expanded").Should().Be("false");
-        panels[0].Instance.IsExpanded.Should().BeTrue();
-        panels[1].Instance.IsExpanded.Should().BeFalse();
+        var cut = RenderAccordionWithTwoPanels();
+        var button1 = cut.Find("h3:nth-of-type(1) > button");
+        var button2 = cut.Find("h3:nth-of-type(2) > button");
 
         button2.Click();
 
         button1.GetAttribute("aria-expanded").Should().Be("false");
         button2.GetAttribute("aria-expanded").Should().Be("true");
-        panels[0].Instance.IsExpanded.Should().BeFalse();
-        panels[1].Instance.IsExpanded.Should().BeTrue();
     }
 
-    // aria-controls="ID"	button	
+    // aria-controls="ID" button	
     // Points to the ID of the panel which the header controls.
     [Fact(DisplayName = "aria-controls=ID Points to the ID of the panel which the header controls.")]
     public void AriaControlsAttribute()
     {
-        var cut = Render( @<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                           </AriaAccordion>);
+        RenderTree.Add<AriaAccordion>();
+
+        var cut = Render(@<AccordionPanel Title="P1">CONTENT</AccordionPanel>);
         
-        var panel = cut.FindComponent<AccordionPanel>();
-        var buttonId = panel.Find("button").GetAttribute("aria-controls");
-        
-        panel.Find("div")
-            .GetAttribute("id")
-            .Should().Be(buttonId);
-            
+        var buttonControlsId = cut.Find("button").GetAttribute("aria-controls");
+        cut.Find("div").Id.Should().Be(buttonControlsId);            
     }
 
-
-// aria-disabled="true"	button	
-// If the accordion panel is expanded and is not allowed to be collapsed, then set to true.
-
-    [Fact(DisplayName = "If the accordion panel is expanded and is not allowed to be collapsed, then set to true.")]
-    public void AriaDisabledAttribute()
-    {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
-        var panels = cut.FindComponents<AccordionPanel>();
-        var button1 = panels[0].Find("button");
-        var button2 = panels[1].Find("button");
-
-        button1.HasAttribute("aria-disabled").Should().BeTrue();
-        button2.HasAttribute("aria-disabled").Should().BeFalse();
-    }
-
-// region		div	
-// Creates a landmark region that contains the currently expanded accordion panel.
-
-    [Fact(DisplayName = "Creates a landmark region that contains the currently expanded accordion panel.")]
-    public void RegionAttribute()
-    {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
-        var panels = cut.FindComponents<AccordionPanel>();
-        var content1 = panels[0].Find("div");
-        var content2 = panels[1].Find("div");
-
-        content1.GetAttribute("role").Should().Be("region");
-        content2.HasAttribute("role").Should().BeFalse();
-    }
-
-// aria-labelledby="IDREF"	div	
-// Defines the accessible name for the region element.
-// References the accordion header button that expands and collapses the region.
-// region elements are required to have an accessible name to be identified as a landmark.
-
+    // aria-labelledby="IDREF"	div	
+    // Defines the accessible name for the region element.
+    // References the accordion header button that expands and collapses the region.
+    // region elements are required to have an accessible name to be identified as a landmark.
     [Fact(DisplayName = "aria-labelledby=IDREF References the accordion header button that expands and collapses the region.")]
     public void AriaLabelledByAttribute()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-    </AriaAccordion>
-    );
+        RenderTree.Add<AriaAccordion>();
 
-        var panel = cut.FindComponent<AccordionPanel>();
-        var buttonId = panel.Find("button").GetAttribute("id");
+        var cut = Render(@<AccordionPanel Title="P1">CONTENT</AccordionPanel>);
 
-        panel.Find("div")
-            .GetAttribute("aria-labelledby")
-            .Should().Be(buttonId);
-
+        var divLabelledById = cut.Find("div").GetAttribute("aria-labelledby");            
+        cut.Find("button").Id.Should().Be(divLabelledById);
     }
 
-
-    // Tab	
-    // Moves focus to the next focusable element.
-    // All focusable elements in the accordion are included in the page Tab sequence.
-
-    // Shift + Tab	
-    // Moves focus to the previous focusable element.
-    // All focusable elements in the accordion are included in the page Tab sequence.
-
-    [Fact(
-        DisplayName = " All focusable elements in the accordion are included in the page Tab sequence.",
-        Skip = "USE e2e?")]
-    public void TabForward()
-    {
-                var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <input />
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <input />
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
-    // Focus on the first button
-    // Simulate Tab keypress
-    // Assert input is focused
-
-    }
-
-// Down Arrow	
-// When focus is on an accordion header, moves focus to the next accordion header.
-// When focus is on last accordion header, moves focus to first accordion header.
-
+    // Down Arrow	
+    // When focus is on an accordion header, moves focus to the next accordion header.
+    // When focus is on last accordion header, moves focus to first accordion header.
     [Fact(DisplayName = "When focus is on an accordion header, Down Arrow moves focus to the next accordion header.")]
-    public async Task DownArrowNavigation()
+    public void DownArrowNavigation()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
+        var cut = RenderAccordionWithTwoPanels();
         var panels = cut.FindComponents<AccordionPanel>();
         var button1 = panels[0].Find("button");
         var button2 = panels[1].Find("button");
 
-        await button1.KeyDownAsync(Key.Down);
+        button1.KeyDown(Key.Down);
+
         JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(button2);
     }
 
     [Fact(DisplayName = "When focus is on last accordion header, Down Arrow moves focus to first accordion header.")]
-    public async Task DownArrowNavigationLoops()
+    public void DownArrowNavigationLoops()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
+        var cut = RenderAccordionWithTwoPanels();
         var panels = cut.FindComponents<AccordionPanel>();
         var button1 = panels[0].Find("button");
         var button2 = panels[1].Find("button");
 
-        await button2.KeyDownAsync(Key.Down);
+        button2.KeyDown(Key.Down);
+
         JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(button1);
     }
 
-
-// Up Arrow	
-// When focus is on an accordion header, moves focus to the previous accordion header.
-// When focus is on first accordion header, moves focus to last accordion header.
-
+    // Up Arrow	
+    // When focus is on an accordion header, moves focus to the previous accordion header.
+    // When focus is on first accordion header, moves focus to last accordion header.
     [Fact(DisplayName = "When focus is on last accordion header, moves focus to first accordion header.")]
-    public async Task UpArrowNavigation()
+    public void UpArrowNavigation()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
+        var cut = RenderAccordionWithTwoPanels();
         var panels = cut.FindComponents<AccordionPanel>();
         var button1 = panels[0].Find("button");
         var button2 = panels[1].Find("button");
 
-        await button2.KeyDownAsync(Key.Up);
+        button2.KeyDown(Key.Up);
+
         JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(button1);
     }
 
     [Fact(DisplayName = "When focus is on last accordion header, moves focus to first accordion header.")]
-    public async Task UpArrowNavigationLoops()
+    public void UpArrowNavigationLoops()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
+        var cut = RenderAccordionWithTwoPanels();
         var panels = cut.FindComponents<AccordionPanel>();
         var button1 = panels[0].Find("button");
         var button2 = panels[1].Find("button");
 
-        await button1.KeyDownAsync(Key.Up);
+        button1.KeyDown(Key.Up);
+
         JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(button2);
     }
 
-// Home	
-// When focus is on an accordion header, moves focus to the first accordion header.
-
+    // Home	
+    // When focus is on an accordion header, moves focus to the first accordion header.
     [Fact(DisplayName = "When focus is on an accordion header, Home moves focus to the first accordion header.")]
-    public async Task HomeNavigation()
+    public void HomeNavigation()
     {
-        var cut = Render(@<AriaAccordion>
-                               <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P3">
-                                    <p>P3 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P4">
-                                    <p>P4 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
+        var cut = RenderAccordionWithFourPanels();
         var panels = cut.FindComponents<AccordionPanel>();
         var button3 = panels[2].Find("button");
         var button1 = panels[0].Find("button");
 
-        await button3.KeyDownAsync(Key.Home);
+        button3.KeyDown(Key.Home);
+
         JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(button1);
     }
 
-// End	
-// When focus is on an accordion header, moves focus to the last accordion header.
-
+    // End	
+    // When focus is on an accordion header, moves focus to the last accordion header.
     [Fact(DisplayName = "When focus is on an accordion header, End moves focus to the last accordion header.")]
-    public async Task EndNavigation()
+    public void EndNavigation()
     {
-        var cut = Render(@<AriaAccordion>
-                                <AccordionPanel Title="P1">
-                                    <p>P1 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P2">
-                                    <p>P2 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P3">
-                                    <p>P3 Content</p>
-                                </AccordionPanel>
-                                <AccordionPanel Title="P4">
-                                    <p>P4 Content</p>
-                                </AccordionPanel>
-                        </AriaAccordion>
-    );
-
+        var cut = RenderAccordionWithFourPanels();
         var panels = cut.FindComponents<AccordionPanel>();
         var button2 = panels[1].Find("button");
         var button4 = panels[3].Find("button");
 
-        await button2.KeyDownAsync(Key.End);
+        button2.KeyDown(Key.End);
+
         JSInterop.VerifyFocusAsyncInvoke().Arguments[0].ShouldBeElementReferenceTo(button4);
     }
-
 }
